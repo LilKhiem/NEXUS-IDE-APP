@@ -1,0 +1,312 @@
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { AlertCircle, CheckCircle2, Download, Laptop, FileCode, ArrowRight } from 'lucide-react';
+
+const prompts = {
+  "Mean Reversion": {
+    text: "mean reversion USDJPY, London session, target Sharpe > 2, MaxDD < 3%, min 500 trades.",
+    logs: [
+      "NEXUS Chat ›",
+      "You: Build a mean‑reversion strategy on USDJPY, London session only.",
+      "NEXUS: Got it. I’ll generate candidates, run IS/WFA/OOS and cost stress, then show you the equity & drawdown curves.",
+      "",
+      "USER_PROMPT:",
+      "\"Mean reversion USDJPY, London session, target Sharpe > 2, MaxDD < 3%, min 500 trades.\"",
+      "",
+      "AGENT_LOGS:",
+      "[ATLAS] Generating candidate hypotheses...",
+      "[ECHO] Running walk‑forward validation...",
+      "[DELTA] Stress testing x2 costs and 2020‑style crash...",
+      "[SYNTH] Aggregating gates and computing robustness score...",
+      "",
+      "VALIDATION_GATES:",
+      "IS_PASS ✓  WFA_PASS ✓  OOS_PASS ✓  COST_STRESS ✓  ROBUSTNESS 0.82",
+      "",
+      "STRATEGY_CERTIFIED ✓",
+      "REPORT: Interactive equity & drawdown charts generated. Research trail stored in Evidence Ledger."
+    ]
+  },
+  "Momentum": {
+    text: "momentum breakout BTCUSD, 1h timeframe, Volatility adjusted, WinRate > 60%",
+    logs: [
+      "NEXUS Chat ›",
+      "You: Create a momentum breakout strategy for BTCUSD.",
+      "NEXUS: Initializing. Scanning volatility regimes and testing breakout sensitivity across multiple timeframes.",
+      "",
+      "USER_PROMPT:",
+      "\"momentum breakout BTCUSD, 1h timeframe, Volatility adjusted, WinRate > 60%\"",
+      "",
+      "AGENT_LOGS:",
+      "[ATLAS] Scanning volatility regimes...",
+      "[ECHO] Testing breakout sensitivity...",
+      "[DELTA] Stress testing slippage 5bps...",
+      "[SYNTH] Computing robustness score...",
+      "",
+      "VALIDATION_GATES:",
+      "IS_PASS ✓  WFA_PASS ✓  OOS_PASS ✓  COST_STRESS ✓  ROBUSTNESS 0.94",
+      "",
+      "STRATEGY_CERTIFIED ✓",
+      "REPORT: Interactive equity & drawdown charts generated. Research trail stored in Evidence Ledger."
+    ]
+  },
+  "Portfolio": {
+    text: "multi-asset portfolio, SPY/TLT/GLD, Risk Parity, Monthly rebalance",
+    logs: [
+      "NEXUS Chat ›",
+      "You: Optimize a multi-asset portfolio with risk parity.",
+      "NEXUS: Processing. Running historical stress scenarios and optimizing covariance matrix for SPY/TLT/GLD.",
+      "",
+      "USER_PROMPT:",
+      "\"multi-asset portfolio, SPY/TLT/GLD, Risk Parity, Monthly rebalance\"",
+      "",
+      "AGENT_LOGS:",
+      "[ATLAS] Optimizing covariance matrix...",
+      "[ECHO] Running historical stress scenarios...",
+      "[DELTA] 2008/2020 Replay stress test...",
+      "[SYNTH] Aggregating gates...",
+      "",
+      "VALIDATION_GATES:",
+      "SHARPE: 1.8 | SORTINO: 2.2 | MAXDD: 8% | PASS",
+      "",
+      "STRATEGY_CERTIFIED ✓",
+      "REPORT: Interactive equity & drawdown charts generated. Research trail stored in Evidence Ledger."
+    ]
+  }
+};
+
+const Sparkline = ({ data }: { data: any[] }) => (
+  <div className="h-6 w-full mt-2 opacity-50">
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={data}>
+        <Line type="monotone" dataKey="v" stroke="#F0B429" strokeWidth={1.5} dot={false} />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+);
+
+import { trackCTA } from '../lib/analytics';
+import { toast } from 'sonner';
+
+export const Hero = ({ onOpenDownload, onOpenCheckout }: { onOpenDownload: () => void, onOpenCheckout: () => void }) => {
+  const [activeTab, setActiveTab] = useState<keyof typeof prompts>("Mean Reversion");
+  const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    setDisplayedLogs([]);
+    setIsTyping(true);
+    let i = 0;
+    const interval = setInterval(() => {
+      const logsList = prompts[activeTab].logs;
+      if (i < logsList.length) {
+        const currentLog = logsList[i];
+        setDisplayedLogs(prev => [...prev, currentLog]);
+        i++;
+      } else {
+        setIsTyping(false);
+        clearInterval(interval);
+      }
+    }, 600);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
+  return (
+    <section className="relative pt-20 pb-16 px-10 overflow-hidden">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+        <div className="text-left">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 inline-block px-4 py-1 border border-green-500/30 bg-green-500/15 text-green-400 text-[10px] font-bold tracking-[0.2em] uppercase rounded-full"
+          >
+            STABLE RELEASE v2.0-STABLE — NOW AVAILABLE
+          </motion.div>
+
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-7xl font-bold tracking-[-0.04em] leading-[1.0] mb-6 font-display"
+          >
+            NEXUS IDE — 3 MINUTES. <br />
+            <span className="text-[#F0B429]">Local Agentic Desktop Workspace</span>
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="max-w-xl text-[#7A8BA0] text-xl mb-10 leading-relaxed font-light"
+          >
+            The first AI-powered desktop IDE designed to draft, validate, and compile institutional-grade trading systems completely locally containing full privacy of your quantitative models.
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="w-full max-w-md flex flex-col gap-4 mb-4"
+          >
+            <div className="space-y-4">
+              <button 
+                onClick={() => {
+                  trackCTA('hero_download_setup_exe');
+                  onOpenDownload();
+                }}
+                className="w-full bg-[#F0B429] text-black px-6 py-4 rounded-xl font-bold text-base hover:opacity-90 transition-all active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-[#F0B429]/10 hover:shadow-[#F0B429]/20"
+              >
+                <Download className="w-5 h-5" />
+                Download for Windows (.exe)
+              </button>
+
+              <div className="flex flex-col sm:flex-row items-center gap-4 mt-2 justify-between">
+                <a 
+                  href="#how" 
+                  className="text-xs text-[#F0B429] hover:underline font-mono tracking-wider flex items-center gap-1 uppercase"
+                >
+                  Onboarding & Setup Guide <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+                <span className="text-[11px] text-[#4A5568] font-['JetBrains_Mono'] uppercase tracking-widest leading-none">
+                  Build Size: ~324.8 MB · Stable x64
+                </span>
+              </div>
+            </div>
+
+            <div className="border-t border-[#1A2333]/60 pt-5 mt-4 space-y-2 text-left">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#4A5568] font-mono leading-none">System Specifications:</div>
+              <div className="grid grid-cols-3 gap-2 py-1 font-mono text-[10px] text-[#7A8BA0]">
+                <div className="p-2 rounded bg-[#0A101A] border border-[#1A2333]">
+                  <div className="text-white font-bold uppercase mb-0.5">PLATFORM</div>
+                  <div>Win 10/11 x64</div>
+                </div>
+                <div className="p-2 rounded bg-[#0A101A] border border-[#1A2333]">
+                  <div className="text-white font-bold uppercase mb-0.5">MEMORY</div>
+                  <div>8GB RAM Min</div>
+                </div>
+                <div className="p-2 rounded bg-[#0A101A] border border-[#1A2333]">
+                  <div className="text-white font-bold uppercase mb-0.5">PRIVACY</div>
+                  <div>100% Local Core</div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Interactive Prompt Panel */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+          className="relative group"
+        >
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#F0B429]/20 to-transparent blur-xl opacity-50 group-hover:opacity-75 transition duration-1000"></div>
+          <div className="relative bg-[#05070A] border border-[#1A2333] rounded-xl overflow-hidden shadow-2xl shadow-[#F0B429]/5">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#1A2333] bg-[#0D1521]">
+              <div className="flex gap-4">
+                {(Object.keys(prompts) as Array<keyof typeof prompts>).map(tab => (
+                  <button 
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`text-[10px] font-['JetBrains_Mono'] uppercase tracking-widest transition-colors ${activeTab === tab ? 'text-[#F0B429]' : 'text-[#4A5568] hover:text-white'}`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#27C93F]"></div>
+              </div>
+            </div>
+            <div className="p-6 text-left font-['JetBrains_Mono'] text-sm leading-relaxed min-h-[320px] flex flex-col">
+              <div className="flex gap-3 mb-6">
+                <span className="text-[#F0B429]">❯</span>
+                <span className="text-white">
+                  {prompts[activeTab].text}
+                  <span className="inline-block w-2 h-4 bg-[#F0B429] ml-1 animate-pulse align-middle"></span>
+                </span>
+              </div>
+              <div className="space-y-2 text-[12px] flex-1">
+                <AnimatePresence mode="popLayout">
+                  {displayedLogs.map((log, idx) => {
+                    if (log === undefined || log === null) return null;
+                    return (
+                      <motion.div 
+                        key={idx}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-[#4A5568]"
+                      >
+                        {log === "NEXUS Chat ›" ? (
+                          <span className="text-[#F0B429] font-bold">{log}</span>
+                        ) : log.startsWith("You:") ? (
+                          <span className="text-white"><span className="text-[#F0B429]">You:</span> {log.replace("You:", "")}</span>
+                        ) : log.startsWith("NEXUS:") ? (
+                          <span className="text-[#7A8BA0]"><span className="text-[#F0B429]">NEXUS:</span> {log.replace("NEXUS:", "")}</span>
+                        ) : log.includes('✓') || log.includes('PASSED') || log.includes('CERTIFIED') ? (
+                          <span className="text-[#27C93F]">{log}</span>
+                        ) : log.includes('[ATLAS]') || log.includes('[ECHO]') || log.includes('[DELTA]') || log.includes('[SYNTH]') ? (
+                          <>
+                            {log.split(' ').map((word, i) => 
+                              ['[ATLAS]', '[ECHO]', '[DELTA]', '[SYNTH]'].includes(word) ? 
+                              <span key={i} className="text-[#F0B429]">{word} </span> : 
+                              word + ' '
+                            )}
+                          </>
+                        ) : log.endsWith(':') ? (
+                          <span className="text-[#F0B429] font-bold">{log}</span>
+                        ) : log}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+                {!isTyping && displayedLogs.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-6 text-[#27C93F] font-bold"
+                  >
+                    STRATEGY CERTIFIED ✓ — Deployment Ready
+                  </motion.div>
+                )}
+              </div>
+              <div className="mt-auto pt-4 flex justify-end">
+                <div className="bg-[#F0B429]/10 border border-[#F0B429]/20 px-3 py-1 rounded text-[10px] text-[#F0B429] font-bold tracking-widest uppercase">
+                  Validated in 2m 47s
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Metrics Strip as Micro-Dashboard */}
+      <div className="w-full max-w-7xl mt-20 grid grid-cols-2 md:grid-cols-5 gap-4 border-t border-[#1A2333] pt-10">
+        {[
+          { label: "EXPERIMENTS VALIDATED", value: "50,817", trend: [{v:10},{v:15},{v:12},{v:18},{v:25},{v:22},{v:30}], hint: "Total unique strategies tested across all market regimes." },
+          { label: "KILL RATE", value: "97%", trend: [{v:95},{v:96},{v:97},{v:97},{v:98},{v:97},{v:97}], hint: "97% of tested ideas never reach certification – by design." },
+          { label: "CERTIFIED CHAMPIONS", value: "11", trend: [{v:2},{v:3},{v:5},{v:6},{v:8},{v:9},{v:11}], hint: "Institutional-grade strategies currently in live deployment." },
+          { label: "IDEA → CERTIFIED", value: "3 min", trend: [{v:10},{v:8},{v:7},{v:5},{v:4},{v:3},{v:3}], hint: "Average time from plain English prompt to certified result." },
+          { label: "REPLACED AT", value: "$99/MO", trend: [{v:50},{v:50},{v:50},{v:50},{v:50},{v:50},{v:50}], hint: "Replaces a $500K/year quant team for the cost of a SaaS subscription." }
+        ].map((stat, i) => (
+          <motion.div 
+            key={i} 
+            whileHover={{ y: -5 }}
+            className="bg-[#0A101A] border border-[#1A2333] p-5 rounded-xl hover:border-[#F0B429]/50 transition-all group relative"
+          >
+            <div className="text-[#F0B429] text-3xl font-bold font-display mb-1 tracking-tight">{stat.value}</div>
+            <div className="text-[9px] text-[#4A5568] font-bold tracking-widest uppercase leading-tight mb-2">{stat.label}</div>
+            <Sparkline data={stat.trend} />
+            
+            {/* Tooltip */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-[#0D1521] border border-[#1A2333] rounded-lg text-[10px] text-[#7A8BA0] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+              {stat.hint}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+};
