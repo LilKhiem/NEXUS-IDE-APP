@@ -129,8 +129,8 @@ export const Hero = ({ onOpenDownload, onOpenCheckout }: { onOpenDownload: () =>
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-7xl font-bold tracking-[-0.04em] leading-[1.0] mb-6 font-display"
           >
-            NEXUS IDE — 3 MINUTES. <br />
-            <span className="text-[#F0B429]">Local Agentic Desktop Workspace</span>
+            NEXUS Studio <br />
+            <span className="text-[#F0B429]">Quant Trading R&D</span>
           </motion.h1>
 
           <motion.p 
